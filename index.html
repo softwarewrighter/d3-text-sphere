@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>d3-text-sphere</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a2e;
+        }
+        #app {
+            width: 100%;
+            height: 100%;
+        }
+        svg {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- Load d3.js from CDN -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Verify d3 loaded -->
+    <script>
+        if (typeof d3 === 'undefined') {
+            console.error('d3.js failed to load');
+            document.body.innerHTML = '<p style="color: red; padding: 20px;">Error: d3.js failed to load</p>';
+        } else {
+            console.log('d3.js v' + d3.version + ' loaded');
+        }
+    </script>
+
+    <link data-trunk rel="rust" data-wasm-opt="z" />
+</body>
+</html>

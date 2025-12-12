@@ -1,0 +1,11 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+watch = ["src", "index.html"]
+
+[serve]
+addresses = ["127.0.0.1"]
+port = 1141
+open = false
