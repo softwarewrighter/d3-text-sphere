@@ -295,18 +295,20 @@ impl TextSphere {
             let x = ORBIT_RADIUS * angle.cos();
             let z = ORBIT_RADIUS * angle.sin();
 
-            // Perspective projection
-            let scale = PERSPECTIVE_DISTANCE / (PERSPECTIVE_DISTANCE + z);
+            // Perspective projection - closer (z > 0) = larger
+            let scale = PERSPECTIVE_DISTANCE / (PERSPECTIVE_DISTANCE - z);
             let screen_x = self.center_x + x * scale;
             let screen_y = self.center_y;
             let font_size = LETTER_SIZE * scale;
 
             // Fade based on z position (depth)
-            // z > 0 = in front (coming from right), fully visible
-            // z < 0 = behind (going to left), faded out
-            // This creates the illusion of going behind the sphere
+            // z > 0 = in front, fully visible
+            // z < 0 = behind, faded out
+            // Adjusted curve: fade out later, fade in sooner
             let normalized_z = (z + ORBIT_RADIUS) / (2.0 * ORBIT_RADIUS); // 0 to 1
-            let opacity = normalized_z.powi(2); // Square for sharper fade
+            // Shift and clamp to make transition happen more at the back
+            let adjusted_z = ((normalized_z - 0.2) * 1.5).clamp(0.0, 1.0);
+            let opacity = adjusted_z.sqrt(); // sqrt for gentler fade curve
 
             char_data.push((i, screen_x, screen_y, font_size, opacity, z));
         }
