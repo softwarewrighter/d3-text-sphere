@@ -1,6 +1,6 @@
 [build]
 target = "index.html"
-dist = "dist"
+dist = "docs"
 
 [watch]
 watch = ["src", "index.html"]

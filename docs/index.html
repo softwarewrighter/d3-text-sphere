@@ -24,7 +24,7 @@
             display: block;
         }
     </style>
-</head>
+<link rel="modulepreload" href="/d3-text-sphere-d9c91998a03dc286.js" crossorigin="anonymous" integrity="sha384-0r8yhgtVw4QDc8P9nTsPs3pmggfLhEpOLO1Oqvv1BghApHDM2XeEQWUxeuIzJZZ9"><link rel="modulepreload" href="/snippets/d3-text-sphere-e1a1e353063b6e0e/inline0.js" crossorigin="anonymous" integrity="sha384-N0t7K0/9fFy+oNDV2N+aaFuPFIGrB7cczETAo6C90GEeSU1GCFKJpr489XblxE+Y"><link rel="preload" href="/d3-text-sphere-d9c91998a03dc286_bg.wasm" crossorigin="anonymous" integrity="sha384-rxM9QFrvDr5AfWnjUvZLp2f65BQ99hU0kpzIulrNHvd+2RTgkqwVsbWwh1pxXiFh" as="fetch" type="application/wasm"></head>
 <body>
     <div id="app"></div>
 
@@ -41,7 +41,18 @@
         }
     </script>
 
-    <link data-trunk rel="rust" data-wasm-opt="z" />
-    <link data-trunk rel="copy-file" href=".nojekyll" />
+    
+<script type="module">
+import init, * as bindings from '/d3-text-sphere-d9c91998a03dc286.js';
+const wasm = await init({ module_or_path: '/d3-text-sphere-d9c91998a03dc286_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+    
 </body>
 </html>

@@ -2,6 +2,8 @@
 
 A Rust/WebAssembly web application that displays the text "[d3-text-sphere]" orbiting around a simulated 3D sphere, rendered using **d3.js** and **SVG**.
 
+**[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/)**
+
 ![Screenshot](images/screenshot.png?ts=1734041970368)
 
 This is a companion project to [three-text-sphere](https://github.com/softwarewrighter/three-text-sphere), which uses Three.js and WebGL for true 3D rendering. This project demonstrates an alternative approach using d3.js with 2D SVG to simulate a 3D effect.
@@ -24,11 +26,11 @@ This is a companion project to [three-text-sphere](https://github.com/softwarewr
 
 ## Documentation
 
-- [Product Requirements (PRD)](docs/prd.md) - Goals, requirements, and success criteria
-- [Architecture](docs/architecture.md) - System design and technology stack
-- [Design](docs/design.md) - Technical design details and 3D math
-- [Implementation Plan](docs/plan.md) - Step-by-step development phases
-- [Status](docs/status.md) - Current project status
+- [Product Requirements (PRD)](documentation/prd.md) - Goals, requirements, and success criteria
+- [Architecture](documentation/architecture.md) - System design and technology stack
+- [Design](documentation/design.md) - Technical design details and 3D math
+- [Implementation Plan](documentation/plan.md) - Step-by-step development phases
+- [Status](documentation/status.md) - Current project status
 
 ## Quick Start
 
@@ -48,7 +50,7 @@ trunk serve
 trunk build --release
 
 # Serve the built files
-cd dist && python3 -m http.server 8080
+cd docs && python3 -m http.server 8080
 ```
 
 ## Project Structure
@@ -61,7 +63,8 @@ d3-text-sphere/
 ├── README.md           # This file
 ├── src/
 │   └── lib.rs          # Main WASM entry point
-└── docs/
+├── docs/               # Built assets for GitHub Pages
+└── documentation/
     ├── prd.md          # Product requirements
     ├── architecture.md # System architecture
     ├── design.md       # Technical design

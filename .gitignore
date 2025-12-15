@@ -1,4 +1,6 @@
 /target
 /dist
+
+# Ignore wasm files except in docs (GitHub Pages)
 *.wasm
-Cargo.lock
+!docs/*.wasm
