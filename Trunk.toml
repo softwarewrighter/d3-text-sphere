@@ -1,6 +1,7 @@
 [build]
 target = "index.html"
 dist = "docs"
+public_url = "/d3-text-sphere/"
 
 [watch]
 watch = ["src", "index.html"]
