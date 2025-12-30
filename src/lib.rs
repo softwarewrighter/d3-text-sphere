@@ -8,12 +8,13 @@ use wasm_bindgen::JsCast;
 // Configuration Constants
 // ============================================================================
 
-const TEXT_TO_DISPLAY: &str = "[d3-text-sphere]";
-const ORBIT_RADIUS: f64 = 150.0;
-const ROTATION_SPEED: f64 = 0.4;
+const TEXT_TO_DISPLAY: &str = "[d3-text-sphere2]";
+const ORBIT_RADIUS: f64 = 200.0;
+const ROTATION_SPEED: f64 = 0.3;
 const LETTER_SIZE: f64 = 48.0;
 const SPHERE_RADIUS: f64 = 80.0;
-const PERSPECTIVE_DISTANCE: f64 = 400.0;
+const PERSPECTIVE_DISTANCE: f64 = 400.0; // Increased for less extreme perspective
+const SKEW_INTENSITY: f64 = 0.3; // Subtle skew to keep letters more upright
 
 // ============================================================================
 // d3.js JavaScript Bindings
@@ -74,7 +75,7 @@ const PERSPECTIVE_DISTANCE: f64 = 400.0;
             .attr('cy', cy);
     }
 
-    export function create_text_element(svg, x, y, char, fill, font_size) {
+    export function create_text_element(svg, x, y, char, fill, font_size, skew_x) {
         return d3.select(svg)
             .append('text')
             .attr('x', x)
@@ -87,15 +88,19 @@ const PERSPECTIVE_DISTANCE: f64 = 400.0;
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
             .attr('opacity', 1)
+            .attr('transform', `skewX(${skew_x})`)
             .node();
     }
 
-    export function update_text_element(element, x, y, font_size, opacity) {
+    export function update_text_element(element, x, y, font_size, opacity, scale_x, skew_x) {
+        // Transform around the text's position, not the SVG origin
+        // Order: translate to origin → scale → skew → translate back
         d3.select(element)
             .attr('x', x)
             .attr('y', y)
             .attr('font-size', font_size + 'px')
-            .attr('opacity', opacity);
+            .attr('opacity', opacity)
+            .attr('transform', `translate(${x}, ${y}) scale(${scale_x}, 1) skewX(${skew_x}) translate(${-x}, ${-y})`);
     }
 
     export function bring_to_front(element) {
@@ -122,11 +127,132 @@ const PERSPECTIVE_DISTANCE: f64 = 400.0;
         });
     }
 
-    export function get_window_size() {
-        return {
-            width: window.innerWidth,
-            height: window.innerHeight
-        };
+    export function create_debug_lines(svg, center_x, center_y, width, height) {
+        const g = d3.select(svg).append('g').attr('id', 'debug-lines');
+
+        // Vertical line through sphere center
+        g.append('line')
+            .attr('id', 'sphere-center-line')
+            .attr('x1', center_x)
+            .attr('y1', 0)
+            .attr('x2', center_x)
+            .attr('y2', height)
+            .attr('stroke', '#ff0000')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('opacity', 0.7);
+
+        // Vertical line for orbit center (same for now)
+        g.append('line')
+            .attr('id', 'orbit-center-line')
+            .attr('x1', center_x)
+            .attr('y1', 0)
+            .attr('x2', center_x)
+            .attr('y2', height)
+            .attr('stroke', '#00ff00')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '10,10')
+            .attr('opacity', 0.7);
+
+        return g.node();
+    }
+
+    export function update_debug_info(svg, text) {
+        let info = d3.select(svg).select('#debug-info');
+        if (info.empty()) {
+            info = d3.select(svg).append('text')
+                .attr('id', 'debug-info')
+                .attr('x', 10)
+                .attr('y', 20)
+                .attr('fill', '#ffffff')
+                .attr('font-size', '12px')
+                .attr('font-family', 'monospace');
+        }
+        info.text(text);
+    }
+
+    export function update_debug_lines(svg, center_x, center_y, width, height) {
+        const g = d3.select(svg).select('#debug-lines');
+        if (!g.empty()) {
+            g.select('#sphere-center-line')
+                .attr('x1', center_x)
+                .attr('x2', center_x)
+                .attr('y2', height);
+
+            g.select('#orbit-center-line')
+                .attr('x1', center_x)
+                .attr('x2', center_x)
+                .attr('y2', height);
+        }
+    }
+
+    export function create_orbit_lines(svg, center_x, center_y, orbit_radius, sphere_offset) {
+        const g = d3.select(svg).append('g').attr('id', 'orbit-lines');
+
+        // 0 degrees (right) - Red: x=orbit_radius, z=0
+        g.append('line')
+            .attr('id', 'orbit-0')
+            .attr('x1', center_x + orbit_radius + sphere_offset)
+            .attr('y1', center_y - 100)
+            .attr('x2', center_x + orbit_radius + sphere_offset)
+            .attr('y2', center_y + 100)
+            .attr('stroke', '#ff0000')
+            .attr('stroke-width', 3)
+            .attr('opacity', 0.7);
+
+        // 90 degrees (front) - Green: x=0, z=orbit_radius (closest to viewer)
+        g.append('line')
+            .attr('id', 'orbit-90')
+            .attr('x1', center_x + sphere_offset)
+            .attr('y1', center_y - 100)
+            .attr('x2', center_x + sphere_offset)
+            .attr('y2', center_y + 100)
+            .attr('stroke', '#00ff00')
+            .attr('stroke-width', 3)
+            .attr('opacity', 0.7);
+
+        // 180 degrees (left) - Blue: x=-orbit_radius, z=0
+        g.append('line')
+            .attr('id', 'orbit-180')
+            .attr('x1', center_x - orbit_radius + sphere_offset)
+            .attr('y1', center_y - 100)
+            .attr('x2', center_x - orbit_radius + sphere_offset)
+            .attr('y2', center_y + 100)
+            .attr('stroke', '#0000ff')
+            .attr('stroke-width', 3)
+            .attr('opacity', 0.7);
+
+        // 270 degrees (back) - Yellow: x=0, z=-orbit_radius (furthest from viewer)
+        g.append('line')
+            .attr('id', 'orbit-270')
+            .attr('x1', center_x + sphere_offset)
+            .attr('y1', center_y - 100)
+            .attr('x2', center_x + sphere_offset)
+            .attr('y2', center_y + 100)
+            .attr('stroke', '#ffff00')
+            .attr('stroke-width', 3)
+            .attr('opacity', 0.7);
+    }
+
+    export function update_orbit_lines(svg, center_x, center_y, orbit_radius, sphere_offset) {
+        const g = d3.select(svg).select('#orbit-lines');
+        if (!g.empty()) {
+            g.select('#orbit-0')
+                .attr('x1', center_x + orbit_radius + sphere_offset)
+                .attr('x2', center_x + orbit_radius + sphere_offset);
+
+            g.select('#orbit-90')
+                .attr('x1', center_x + sphere_offset)
+                .attr('x2', center_x + sphere_offset);
+
+            g.select('#orbit-180')
+                .attr('x1', center_x - orbit_radius + sphere_offset)
+                .attr('x2', center_x - orbit_radius + sphere_offset);
+
+            g.select('#orbit-270')
+                .attr('x1', center_x + sphere_offset)
+                .attr('x2', center_x + sphere_offset);
+        }
     }
 "#)]
 extern "C" {
@@ -135,6 +261,21 @@ extern "C" {
     fn update_svg_size(width: f64, height: f64);
     fn create_sphere(svg: &JsValue, cx: f64, cy: f64, radius: f64) -> JsValue;
     fn update_sphere_position(sphere: &JsValue, cx: f64, cy: f64);
+    fn update_debug_lines(svg: &JsValue, center_x: f64, center_y: f64, width: f64, height: f64);
+    fn create_orbit_lines(
+        svg: &JsValue,
+        center_x: f64,
+        center_y: f64,
+        orbit_radius: f64,
+        sphere_offset: f64,
+    );
+    fn update_orbit_lines(
+        svg: &JsValue,
+        center_x: f64,
+        center_y: f64,
+        orbit_radius: f64,
+        sphere_offset: f64,
+    );
     fn create_text_element(
         svg: &JsValue,
         x: f64,
@@ -142,10 +283,27 @@ extern "C" {
         char: &str,
         fill: &str,
         font_size: f64,
+        skew_x: f64,
     ) -> JsValue;
-    fn update_text_element(element: &JsValue, x: f64, y: f64, font_size: f64, opacity: f64);
+    fn update_text_element(
+        element: &JsValue,
+        x: f64,
+        y: f64,
+        font_size: f64,
+        opacity: f64,
+        scale_x: f64,
+        skew_x: f64,
+    );
     fn reorder_elements(elements: &js_sys::Array);
     fn get_window_size() -> JsValue;
+    fn create_debug_lines(
+        svg: &JsValue,
+        center_x: f64,
+        center_y: f64,
+        width: f64,
+        height: f64,
+    ) -> JsValue;
+    fn update_debug_info(svg: &JsValue, text: &str);
 }
 
 // ============================================================================
@@ -186,12 +344,19 @@ fn get_color_for_index(index: usize, total: usize) -> String {
 }
 
 // ============================================================================
+// Type Aliases
+// ============================================================================
+
+/// Character render data: (index, screen_x, screen_y, font_size, opacity, z, scale_x, skew)
+type CharRenderData = (usize, f64, f64, f64, f64, f64, f64, f64);
+
+// ============================================================================
 // Character Data Structure
 // ============================================================================
 
 struct Character {
     element: JsValue,
-    initial_angle: f64,
+    base_angle: f64, // Position along orbit (0-2π)
 }
 
 // ============================================================================
@@ -199,6 +364,8 @@ struct Character {
 // ============================================================================
 
 struct TextSphere {
+    #[allow(dead_code)] // Kept for potential future use
+    svg: JsValue,
     sphere: JsValue,
     characters: Vec<Character>,
     current_angle: f64,
@@ -226,24 +393,23 @@ impl TextSphere {
         // Create central sphere (appended to svg)
         let sphere = create_sphere(&svg, center_x, center_y, SPHERE_RADIUS);
 
-        // svg reference used below for creating text elements
-
         // Create characters
         let chars: Vec<char> = TEXT_TO_DISPLAY.chars().filter(|c| *c != ' ').collect();
         let char_count = chars.len();
         let mut characters = Vec::with_capacity(char_count);
 
         for (i, ch) in chars.iter().enumerate() {
-            let initial_angle = -(i as f64 / char_count as f64) * 2.0 * PI;
+            // Position along the orbit (0 to 2π)
+            let base_angle = (PI / 2.0) - (i as f64 / char_count as f64) * 2.0 * PI;
             let color = get_color_for_index(i, char_count);
 
-            // Calculate initial position (at angle 0)
-            let x = ORBIT_RADIUS * initial_angle.cos();
-            let z = ORBIT_RADIUS * initial_angle.sin();
+            // Calculate initial position (at base_angle)
+            let x = ORBIT_RADIUS * base_angle.cos();
+            let z = ORBIT_RADIUS * base_angle.sin();
 
             // Project to 2D
             let scale = PERSPECTIVE_DISTANCE / (PERSPECTIVE_DISTANCE + z);
-            let screen_x = center_x + x * scale;
+            let screen_x = center_x + x;
             let screen_y = center_y;
             let font_size = LETTER_SIZE * scale;
 
@@ -254,20 +420,17 @@ impl TextSphere {
                 &ch.to_string(),
                 &color,
                 font_size,
+                0.0,
             );
 
             characters.push(Character {
                 element,
-                initial_angle,
+                base_angle,
             });
         }
 
-        log::info!(
-            "TextSphere initialized with {} characters",
-            characters.len()
-        );
-
         Some(TextSphere {
+            svg,
             sphere,
             characters,
             current_angle: 0.0,
@@ -285,55 +448,93 @@ impl TextSphere {
             self.current_angle -= 2.0 * PI;
         }
 
-        // Calculate positions and collect for z-ordering
-        let mut char_data: Vec<(usize, f64, f64, f64, f64, f64)> = Vec::new();
+        // Calculate positions using base interpolation
+        let mut char_data: Vec<CharRenderData> = Vec::new();
 
         for (i, character) in self.characters.iter().enumerate() {
-            let angle = character.initial_angle + self.current_angle;
+            let angle = character.base_angle + self.current_angle;
 
             // 3D position (orbiting in XZ plane)
             let x = ORBIT_RADIUS * angle.cos();
             let z = ORBIT_RADIUS * angle.sin();
 
-            // Perspective projection - closer (z > 0) = larger
+            // Perspective projection
+            // z > 0 = in front of center (closer to viewer), z < 0 = behind
             let scale = PERSPECTIVE_DISTANCE / (PERSPECTIVE_DISTANCE - z);
-            let screen_x = self.center_x + x * scale;
+
+            // Project position - centered at screen
+            let screen_x = self.center_x + x;
             let screen_y = self.center_y;
             let font_size = LETTER_SIZE * scale;
 
-            // Fade based on z position (depth)
-            // z > 0 = in front, fully visible
-            // z < 0 = behind, faded out
-            // Adjusted curve: fade out later, fade in sooner
-            let normalized_z = (z + ORBIT_RADIUS) / (2.0 * ORBIT_RADIUS); // 0 to 1
-            // Shift and clamp to make transition happen more at the back
-            let adjusted_z = ((normalized_z - 0.2) * 1.5).clamp(0.0, 1.0);
-            let opacity = adjusted_z.sqrt(); // sqrt for gentler fade curve
+            // Characters face outward from sphere center (radially)
+            // Width scale = cos(angle from front) = z / R
+            // This naturally gives:
+            //   - Front (z = R): scale = 1.0 (full width, facing camera)
+            //   - Sides (z = 0): scale = 0.0 (edge-on)
+            //   - Back (z = -R): scale = -1.0 (full width, flipped/mirrored)
+            let scale_x = z / ORBIT_RADIUS;
 
-            char_data.push((i, screen_x, screen_y, font_size, opacity, z));
+            // Calculate skew for "facing outward" effect
+            // Letters are painted on the sphere surface, facing radially outward
+            // The skew simulates viewing the letter's tangent plane at an angle
+            //
+            // For a letter at position (x, z):
+            // - At front (z = max, x = 0): faces camera directly → no skew
+            // - Moving right (z > 0, x > 0): left edge closer to camera → negative skew
+            // - Moving left (z > 0, x < 0): right edge closer to camera → positive skew
+            // - At back (z < 0): flipped, skew direction reverses
+            let current_skew = if z.abs() > 1.0 {
+                // atan(x/z) gives the angle between the letter normal and camera direction
+                // Convert to degrees and scale by intensity
+                let skew_radians = (x / z).atan();
+                let skew_degrees = skew_radians * (180.0 / PI);
+                // Negative because SVG skewX shifts top-right for positive angles
+                // and we want the near edge (toward camera) to appear larger
+                -skew_degrees * SKEW_INTENSITY
+            } else {
+                // Near edge-on (z ≈ 0), letter is nearly invisible anyway
+                0.0
+            };
+
+            char_data.push((
+                i,
+                screen_x,
+                screen_y,
+                font_size,
+                1.0,
+                z,
+                scale_x,
+                current_skew,
+            ));
         }
 
         // Sort by z (back to front - lowest z first, will be rendered first/behind)
         char_data.sort_by(|a, b| a.5.partial_cmp(&b.5).unwrap());
 
         // Update all character positions
-        for (i, screen_x, screen_y, font_size, opacity, _z) in &char_data {
+        for (i, screen_x, screen_y, font_size, _opacity, _z, scale_x, current_skew) in &char_data {
             update_text_element(
                 &self.characters[*i].element,
                 *screen_x,
                 *screen_y,
                 *font_size,
-                *opacity,
+                1.0, // Always fully visible
+                *scale_x,
+                *current_skew,
             );
         }
 
         // Reorder elements in DOM for proper z-ordering (back to front)
         // char_data is sorted by z ascending (most negative/furthest first)
+        // Only include visible characters (opacity > 0) to avoid z-ordering issues
         let elements = js_sys::Array::new();
 
         let mut sphere_added = false;
-        for (i, _screen_x, _screen_y, _font_size, _opacity, z) in &char_data {
-            // Add sphere when we reach characters in front of it (z > 0)
+        for (i, _screen_x, _screen_y, _font_size, _opacity, z, _scale_x, _current_skew) in
+            &char_data
+        {
+            // Add sphere when transitioning from behind to in-front (z > 0)
             if !sphere_added && *z > 0.0 {
                 elements.push(&self.sphere);
                 sphere_added = true;
@@ -375,6 +576,7 @@ fn request_animation_frame(f: &Closure<dyn FnMut(f64)>) {
         .expect("should register `requestAnimationFrame`");
 }
 
+#[allow(clippy::type_complexity)]
 fn start_animation_loop(text_sphere: Rc<RefCell<TextSphere>>) {
     let f: Rc<RefCell<Option<Closure<dyn FnMut(f64)>>>> = Rc::new(RefCell::new(None));
     let g = f.clone();

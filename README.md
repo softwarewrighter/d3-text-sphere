@@ -1,10 +1,10 @@
 # d3-text-sphere
 
-A Rust/WebAssembly web application that displays the text "[d3-text-sphere]" orbiting around a simulated 3D sphere, rendered using **d3.js** and **SVG**.
+A Rust/WebAssembly web application that displays the text "[d3-text-sphere2]" orbiting around a simulated 3D sphere, rendered using **d3.js** and **SVG**.
 
-**[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/?ts=1734281700000)**
+**[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/?ts=1767061362000)**
 
-![Screenshot](images/screenshot.png?ts=1734041970368)
+![Screenshot](images/screenshot.png?ts=1767061362000)
 
 This is a companion project to [three-text-sphere](https://github.com/softwarewrighter/three-text-sphere), which uses Three.js and WebGL for true 3D rendering. This project demonstrates an alternative approach using d3.js with 2D SVG to simulate a 3D effect.
 
@@ -29,6 +29,7 @@ This is a companion project to [three-text-sphere](https://github.com/softwarewr
 - [Product Requirements (PRD)](documentation/prd.md) - Goals, requirements, and success criteria
 - [Architecture](documentation/architecture.md) - System design and technology stack
 - [Design](documentation/design.md) - Technical design details and 3D math
+- [Grid Approach](documentation/grid-approach.md) - Alternative grid-based projection approach
 - [Implementation Plan](documentation/plan.md) - Step-by-step development phases
 - [Status](documentation/status.md) - Current project status
 

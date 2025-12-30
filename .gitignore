@@ -4,3 +4,9 @@
 # Ignore wasm files except in docs (GitHub Pages)
 *.wasm
 !docs/*.wasm
+
+# Session files
+session-*.md
+
+# Screenshots for debugging
+problem.png
