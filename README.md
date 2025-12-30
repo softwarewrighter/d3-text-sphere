@@ -4,7 +4,7 @@ A Rust/WebAssembly web application that displays the text "[d3-text-sphere2]" or
 
 **[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/?ts=1767061362000)**
 
-![Screenshot](images/screenshot.png?ts=1767061362000)
+![Screenshot](images/screenshot.png?ts=1767061672000)
 
 This is a companion project to [three-text-sphere](https://github.com/softwarewrighter/three-text-sphere), which uses Three.js and WebGL for true 3D rendering. This project demonstrates an alternative approach using d3.js with 2D SVG to simulate a 3D effect.
 
