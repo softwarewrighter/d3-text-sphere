@@ -2,7 +2,7 @@
 
 A Rust/WebAssembly web application that displays the text "[d3-text-sphere2]" orbiting around a simulated 3D sphere, rendered using **d3.js** and **SVG**.
 
-**[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/?ts=1767061362000)**
+**[Live Demo](https://softwarewrighter.github.io/d3-text-sphere/?ts=1767061362000)**  <also: [YouTube Comparison Video](https://www.youtube.com/watch?v=B0z5Plhw9lI&t=135s)  >
 
 ![Screenshot](images/screenshot.png?ts=1767061672000)
 
